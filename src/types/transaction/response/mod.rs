@@ -1,7 +1,12 @@
-/*
+mod oracle_settings;
+mod order;
+
+pub use oracle_settings::*;
+pub use order::*;
+
 use serde::{Deserialize, Serialize};
 
-use crate::types::primitives::AccountAddress;
+use crate::types::primitives::{AccountAddress, AssetRow, InstrumentRow};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum TransactionResponse {
@@ -52,12 +57,6 @@ pub struct DelegateManagerTransactionResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum PlaceOrderResult {
-    Success(OrderEvent),
-    Err(String),
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UpdateOracleConfigResponse {
     pub new_quote_symbol_pattern: Option<String>,
     pub updated_oracle_settings: Option<OracleSettingsMap>,
@@ -72,4 +71,3 @@ pub struct ListAssetsResponse {
 pub struct ListInstrumentsResponse {
     pub instruments: Vec<InstrumentRow>,
 }
-*/

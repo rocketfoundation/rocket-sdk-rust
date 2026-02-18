@@ -14,7 +14,6 @@ pub mod order_events;
 pub mod pagination;
 pub mod position;
 pub mod position_funding_events;
-pub mod transaction;
 pub mod vault_history;
 pub mod vault_stats;
 pub mod vaults;
