@@ -8,6 +8,7 @@ use alloy_primitives::TxHash;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    error::*,
     types::{
         primitives::AccountAddress,
         transaction::{
@@ -15,7 +16,6 @@ use crate::{
             sign::{eip191_hash, eip712_signing_hash, AccountSigner, Signature, SignatureScheme},
         },
     },
-    DeserializeError, Error, SerializeError,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -71,8 +71,8 @@ impl Transaction {
     pub fn hash(&self) -> Result<TxHash, Error> {
         let serialized = self.serialized_bytes()?;
         let digest = match self.signature_scheme {
-            SignatureScheme::Eip191 => eip191_hash(&serialized),
-            SignatureScheme::Eip712 => eip712_signing_hash(&serialized),
+            SignatureScheme::Eip191 => eip191_hash(serialized),
+            SignatureScheme::Eip712 => eip712_signing_hash(serialized),
         };
         Ok(TxHash::from(digest))
     }
@@ -83,15 +83,11 @@ impl RawTransaction {
         match format {
             #[cfg(feature = "json")]
             SerializationFormat::JSON => {
-                use crate::SerializeError;
-
                 let serialized = serde_json::to_vec(self).map_err(SerializeError::JSON)?;
                 Ok(serialized)
             }
             #[cfg(feature = "messagepack")]
             SerializationFormat::MessagePack => {
-                use crate::SerializeError;
-
                 let serialized = rmp_serde::to_vec(self).map_err(SerializeError::MessagePack)?;
                 Ok(serialized)
             }
@@ -104,16 +100,12 @@ impl RawTransaction {
         match format {
             #[cfg(feature = "json")]
             SerializationFormat::JSON => {
-                use crate::DeserializeError;
-
                 let deserialized: Self =
                     serde_json::from_slice(serialized).map_err(DeserializeError::JSON)?;
                 Ok(deserialized)
             }
             #[cfg(feature = "messagepack")]
             SerializationFormat::MessagePack => {
-                use crate::DeserializeError;
-
                 let deserialized: Self =
                     rmp_serde::from_slice(serialized).map_err(DeserializeError::MessagePack)?;
                 Ok(deserialized)
@@ -156,14 +148,14 @@ mod tests {
 
     /// Creates a test signer with a known private key
     fn test_signer() -> AccountSigner {
-        AccountSigner::from_str(
+        AccountSigner::from_hex_key(
             "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
         )
     }
 
     /// Creates a different signer to simulate wrong signer
     fn wrong_signer() -> AccountSigner {
-        AccountSigner::from_str(
+        AccountSigner::from_hex_key(
             "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
         )
     }

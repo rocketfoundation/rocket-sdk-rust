@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    impl_as_ref_mut_newtype,
+    macros::impl_as_ref_mut_newtype,
     types::primitives::{BlockTimestamp, InstrumentId},
 };
 

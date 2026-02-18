@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! impl_as_ref_mut_newtype {
     ($name:ident, $inner:ty) => {
         impl AsRef<$inner> for $name {
@@ -14,3 +13,5 @@ macro_rules! impl_as_ref_mut_newtype {
         }
     };
 }
+
+pub(crate) use impl_as_ref_mut_newtype;

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{impl_as_ref_mut_newtype, types::primitives::AssetId};
+use crate::{macros::impl_as_ref_mut_newtype, types::primitives::AssetId};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AssetView {

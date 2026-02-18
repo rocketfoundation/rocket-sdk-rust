@@ -79,7 +79,7 @@ pub enum TransactionInstruction {
     SetIsTrading(SetIsTradingData),
     SetFeeTier(SetFeeTierData),
     SetFeeCollector(SetFeeCollectorData),
-    UpdateAssetScenarios(UpdateAssetScenariosData),
+    UpdateAssetScenarios(Box<UpdateAssetScenariosData>),
     FaucetClaim(FaucetClaimData),
     SetMainVault(SetMainVaultData),
     DelistInstrument(DelistInstrumentData),

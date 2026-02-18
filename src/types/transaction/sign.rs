@@ -46,17 +46,12 @@ pub fn eip191_hash(message: &[u8]) -> B256 {
     keccak256(eip191_message.as_bytes())
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize, Default, Clone, Copy, Debug, Eq, PartialEq, Hash)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SignatureScheme {
+    #[default]
     Eip191,
     Eip712,
-}
-
-impl Default for SignatureScheme {
-    fn default() -> Self {
-        SignatureScheme::Eip191
-    }
 }
 
 /// A cryptographic signature.
@@ -166,7 +161,7 @@ impl AccountSigner {
     }
 
     /// Create a signer from a hex-encoded private key.
-    pub fn from_str(secret_key: String) -> Self {
+    pub fn from_hex_key(secret_key: String) -> Self {
         let secret_key = secret_key.trim().strip_prefix("0x").unwrap_or(&secret_key);
         let signer: PrivateKeySigner = secret_key.parse().unwrap();
         Self { signer }

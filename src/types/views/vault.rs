@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    impl_as_ref_mut_newtype,
+    macros::impl_as_ref_mut_newtype,
     types::primitives::{AccountAddress, AssetId, BlockTimestamp},
 };
 

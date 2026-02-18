@@ -9,7 +9,8 @@ documentation = "https://github.com/rocketfoundation/rocket-sdk-rust"
 homepage = "https://github.com/rocketfoundation/rocket-sdk-rust"
 readme = "README.md"
 keywords = ["sdk", "api", "rocket", "rocketchain"]
-categories = ["api-bindings", "finance", ]
+categories = ["api-bindings", "finance"]
+rust-version = "1.91.1"
 
 [lib]
 name = "rocket_chain_sdk"
@@ -17,11 +18,11 @@ path = "src/lib.rs"
 
 [dependencies]
 thiserror = "2"
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1", default-features = false, features = ["derive"] }
 hex = { version = "0.4.3" }
 alloy-primitives = { version = "1", default-features = false, features = ["serde"] }
 alloy-sol-types = { version = "1", default-features = false }
-alloy-signer = "1"
+alloy-signer = { version = "1", default-features = false }
 alloy-signer-local = {version = "1", default-features = false }
 
 serde_json = { version = "1", optional = true }
@@ -31,3 +32,4 @@ rmp-serde = { version = "1", optional = true }
 default = []
 json = ["serde_json"]
 messagepack = ["rmp-serde"]
+client = []

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{impl_as_ref_mut_newtype, types::primitives::LiquidityProviderTierLevel};
+use crate::{macros::impl_as_ref_mut_newtype, types::primitives::LiquidityProviderTierLevel};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]

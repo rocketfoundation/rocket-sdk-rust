@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{impl_as_ref_mut_newtype, types::primitives::InstrumentId};
+use crate::{macros::impl_as_ref_mut_newtype, types::primitives::InstrumentId};
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct InstrumentsSetView(HashMap<InstrumentId, InstrumentView>);
