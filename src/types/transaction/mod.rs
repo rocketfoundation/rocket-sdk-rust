@@ -18,26 +18,35 @@ use crate::{
     },
 };
 
+/// Supported formats for serializing transactions.
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub enum SerializationFormat {
     JSON,
     MessagePack,
 }
 
+/// Un-signed transaction data consisting of sender, instruction, and nonce.
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct RawTransaction {
+    /// Address of the account sending the transaction.
     pub sender: AccountAddress,
+    /// Instruction payload to execute.
     pub instruction: TransactionInstruction,
+    /// Transaction nonce to prevent replay.
     pub nonce: u64,
 }
 
+/// Fully signed transaction ready for submission.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
+    /// Raw transaction payload.
     pub data: RawTransaction,
+    /// Format in which the transaction was serialized.
     pub serialization_format: SerializationFormat,
     /// Signature scheme used for this transaction (defaults to EIP-191 for compatibility).
     pub signature_scheme: SignatureScheme,
+    /// Cryptographic signature over the serialized data.
     pub signature: Signature,
     /// Cached serialized bytes to avoid re-serializing on verify/hash.
     #[serde(skip)]
@@ -56,10 +65,12 @@ impl Transaction {
         Ok(self.serialized.get().unwrap().as_slice())
     }
 
+    /// Get the serialized payload.
     pub fn serialize(&self) -> Result<Vec<u8>, Error> {
         Ok(self.serialized_bytes()?.to_vec())
     }
 
+    /// Verify signature. Returns `true` if the signature is valid.
     pub fn verify(&self) -> bool {
         let Ok(serialized) = self.serialized_bytes() else {
             return false;
@@ -68,6 +79,7 @@ impl Transaction {
             .verify_with_scheme(serialized, self.signature_scheme, &self.data.sender)
     }
 
+    /// Returns transaction hash.
     pub fn hash(&self) -> Result<TxHash, Error> {
         let serialized = self.serialized_bytes()?;
         let digest = match self.signature_scheme {
@@ -79,6 +91,7 @@ impl Transaction {
 }
 
 impl RawTransaction {
+    /// Serialize the raw transaction.
     pub fn serialize(&self, format: &SerializationFormat) -> Result<Vec<u8>, Error> {
         match format {
             #[cfg(feature = "json")]
@@ -96,6 +109,7 @@ impl RawTransaction {
         }
     }
 
+    /// Deserialize the raw transaciton.
     pub fn deserialize(serialized: &[u8], format: SerializationFormat) -> Result<Self, Error> {
         match format {
             #[cfg(feature = "json")]
@@ -115,6 +129,7 @@ impl RawTransaction {
         }
     }
 
+    /// Produces a full signed transaction using Eip191 scheme.
     pub fn sign(
         &self,
         format: &SerializationFormat,
@@ -123,6 +138,7 @@ impl RawTransaction {
         self.sign_with_scheme(format, signer, SignatureScheme::Eip191)
     }
 
+    /// Serialize and sign the raw transaction.
     pub fn sign_with_scheme(
         &self,
         format: &SerializationFormat,

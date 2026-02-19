@@ -5,17 +5,23 @@ use crate::types::{
     views::position_funding_events::PositionFundingEventsClientViewSet,
 };
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Request params to retrieve funding events for an account's positions.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct GetAccountPositionFundingEvents {
+    /// Account address to query.
     pub account: AccountAddress,
+    /// Pagination data.
     #[serde(flatten, default)]
     pub pagination_data: PaginationData,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Response with a collection of position funding events.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetPositionFundingEventsResponse {
+    /// Collection of funding events, `None` if there are no events.
     pub events: Option<PositionFundingEventsClientViewSet>,
     #[serde(flatten, default)]
+    /// Pagination data.
     pub pagination_data: PaginationData,
 }

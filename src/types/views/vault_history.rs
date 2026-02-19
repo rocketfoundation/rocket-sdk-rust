@@ -6,27 +6,27 @@ use crate::{
     types::primitives::{AccountAddress, AssetId, BlockTimestamp, Round, Shares},
 };
 
-/// A vault history entry with human-readable values
+/// A vault history entry with human-readable values.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultHistoryEntryClientView {
-    /// Type of event (Deposit or Withdraw)
+    /// Type of event (Deposit or Withdraw).
     pub event_type: VaultHistoryEventType,
-    /// Vault address
+    /// Vault address.
     pub vault: AccountAddress,
-    /// User who deposited/withdrew
+    /// User who deposited/withdrew.
     pub user: AccountAddress,
-    /// Asset deposited/withdrawn
+    /// Asset deposited/withdrawn.
     pub asset_id: AssetId,
-    /// Amount deposited or payout amount for withdrawals (human-readable)
+    /// Amount deposited or payout amount for withdrawals (human-readable).
     pub amount: String,
-    /// Shares minted (for deposit) or burned (for withdraw)
+    /// Shares minted (for deposit) or burned (for withdraw).
     pub shares: Shares,
-    /// Timestamp of the event
+    /// Timestamp of the event.
     pub timestamp: BlockTimestamp,
-    /// Round in which the event occurred
+    /// Round in which the event occurred.
     pub round: Round,
-    /// Transaction hash
+    /// Transaction hash.
     pub tx_hash: TxHash,
 }
 
@@ -36,7 +36,7 @@ pub enum VaultHistoryEventType {
     Withdraw,
 }
 
-/// View containing multiple vault history entries with human-readable values
+/// View containing multiple vault history entries with human-readable values.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct VaultHistoryClientView(Vec<VaultHistoryEntryClientView>);
 

@@ -4,7 +4,10 @@ use std::{fmt::Display, hash::Hash, str::FromStr};
 
 /// An Ethereum-style account address (20 bytes).
 #[derive(Clone, PartialEq, Eq, Hash, Ord, PartialOrd, Debug)]
-pub struct AccountAddress(pub Address);
+pub struct AccountAddress(
+    /// Underlying 20-byte address value.
+    pub Address,
+);
 
 impl Serialize for AccountAddress {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

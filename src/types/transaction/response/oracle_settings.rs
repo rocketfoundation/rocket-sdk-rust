@@ -4,10 +4,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::primitives::AssetTicker;
 
+/// Mapping from data source identifiers to their configuration state.
 pub type OracleSettingsMap = HashMap<SourceId, OracleState>;
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
+/// Identifier for an oracle data source.
 pub enum SourceId {
+    /// Mock data source used for testing.
     Mock,
     Deribit,
     BinanceSpot,
@@ -28,8 +31,11 @@ pub struct OracleState {
     pub price_scales: HashMap<AssetTicker, OraclePriceScale>,
 }
 
+/// Scale factor to adjust prices from an oracle.
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OraclePriceScale {
+    /// Numerator for scaling.
     pub numerator: u64,
+    /// Denominator for scaling.
     pub denominator: u64,
 }

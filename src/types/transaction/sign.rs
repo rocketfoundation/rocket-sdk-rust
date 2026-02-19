@@ -46,6 +46,7 @@ pub fn eip191_hash(message: &[u8]) -> B256 {
     keccak256(eip191_message.as_bytes())
 }
 
+/// Supported signature schemes.
 #[derive(Serialize, Deserialize, Default, Clone, Copy, Debug, Eq, PartialEq, Hash)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SignatureScheme {
@@ -56,7 +57,10 @@ pub enum SignatureScheme {
 
 /// A cryptographic signature.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct Signature(AlloySignature);
+pub struct Signature(
+    /// The raw alloy signature value.
+    AlloySignature,
+);
 
 impl Default for Signature {
     fn default() -> Self {
@@ -129,8 +133,9 @@ impl<'de> Deserialize<'de> for Signature {
 }
 
 /// An account signer that can sign messages.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AccountSigner {
+    /// Underlying private key signer.
     pub signer: PrivateKeySigner,
 }
 

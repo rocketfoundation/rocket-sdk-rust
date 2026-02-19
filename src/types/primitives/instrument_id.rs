@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Debug, thiserror::Error)]
+/// An error type for possible deserialization errors.
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum InstrumentIdError {
     #[error("Failed to construct from hex: {0}")]
     FromHex(hex::FromHexError),
@@ -11,7 +12,10 @@ pub enum InstrumentIdError {
 
 /// An instrument identifier (8-byte hash).
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct InstrumentId(pub u64);
+pub struct InstrumentId(
+    /// Raw 64-bit integer identifier.
+    pub u64,
+);
 
 impl InstrumentId {
     /// Convert to bytes.

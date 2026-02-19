@@ -5,18 +5,25 @@ use crate::types::{
     views::bridge_event::BridgeEventsSetClientView,
 };
 
-#[derive(Serialize, Deserialize)]
+/// Request parameters for querying bridge events.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetBridgeEvents {
+    /// Optional account filter for events.
     pub account: Option<AccountAddress>,
+    /// Optional starting round for events.
     pub round_from: Option<String>,
+    /// Optional ending round for events.
     pub round_to: Option<String>,
+    /// Pagination settings for the query.
     #[serde(flatten)]
     pub pagination_data: PaginationData,
 }
 
-#[derive(Serialize, Deserialize)]
+/// Response containing bridge events.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetBridgeEventsResponse {
+    /// Set of bridge event views.
     pub events: BridgeEventsSetClientView,
 }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Candle timeframe/interval for aggregation
+/// Candle timeframe/interval for aggregation.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CandleTimeframe {
     #[serde(rename = "1m")]

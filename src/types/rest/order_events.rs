@@ -5,17 +5,24 @@ use crate::types::{
     views::order_event::OrderEventClientView,
 };
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Request params to fetch order events for a specific account.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct GetAccountOrderEvents {
+    /// Account whose order events are requested.
     pub account: AccountAddress,
+    /// Pagination parameters.
     #[serde(flatten, default)]
     pub pagination_data: PaginationData,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Response containing a list of order events.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetOrderEventsResponse {
+    /// Vector of order event views, `None` if there are no events.
+    #[serde(default)]
     pub order_events: Option<Vec<OrderEventClientView>>,
+    /// Pagination data.
     #[serde(flatten, default)]
     pub pagination_data: PaginationData,
 }

@@ -1,3 +1,4 @@
+/// A helper macro for implementing [AsRef] and [AsMut].
 macro_rules! impl_as_ref_mut_newtype {
     ($name:ident, $inner:ty) => {
         impl AsRef<$inner> for $name {
