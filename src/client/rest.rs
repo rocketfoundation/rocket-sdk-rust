@@ -1,6 +1,6 @@
 use crate::{
+    client::error::ClientError,
     endpoints::{HTTPMethod, RocketChainRequest},
-    error::{ClientError, Error},
 };
 
 /// A basic example client for sending requests and transactions to the rocket chain node.
@@ -37,28 +37,21 @@ impl RestClient {
     pub async fn send_request<R: RocketChainRequest>(
         &self,
         request: R,
-    ) -> Result<R::Response, Error> {
+    ) -> Result<R::Response, ClientError> {
         let mut url = self.base_url.clone();
         url.set_path(R::ENDPOINT);
 
         let prepared_request = match R::HTTP_METHOD {
             HTTPMethod::GET => self.inner_client.get(url).query(&request),
             HTTPMethod::POST => {
-                let serialized_request = serde_json::to_string(&request)
-                    .map_err(|err| ClientError::SerializeResponse(err))?;
+                let serialized_request = serde_json::to_string(&request)?;
                 self.inner_client.post(url).body(serialized_request)
             }
         };
 
-        let response = prepared_request.send().await.map_err(ClientError::Send)?;
-        let response_text = response
-            .error_for_status()
-            .map_err(ClientError::Send)?
-            .text()
-            .await
-            .map_err(ClientError::Send)?;
+        let response = prepared_request.send().await?;
+        let response_text = response.error_for_status()?.text().await?;
 
-        serde_json::from_str::<R::Response>(&response_text)
-            .map_err(|err| ClientError::DeserializeResponse(err).into())
+        serde_json::from_str::<R::Response>(&response_text).map_err(Into::into)
     }
 }

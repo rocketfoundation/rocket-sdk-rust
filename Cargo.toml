@@ -20,11 +20,12 @@ path = "src/lib.rs"
 thiserror = "2"
 serde = { version = "1", default-features = false, features = ["derive"] }
 hex = { version = "0.4.3" }
+
 alloy-primitives = { version = "1", default-features = false, features = ["serde"] }
 alloy-sol-types = { version = "1", default-features = false }
 alloy-signer = { version = "1", default-features = false }
-alloy-signer-local = {version = "1", default-features = false }
 
+alloy-signer-local = {version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true }
 rmp-serde = { version = "1", optional = true }
 reqwest = { version = "0.13.2", optional = true, features = ["query"] }
@@ -37,4 +38,5 @@ json = ["dep:serde_json"]
 messagepack = ["dep:rmp-serde"]
 endpoints = []
 client = ["dep:reqwest", "dep:serde_json", "endpoints"]
-example = ["dep:tokio"]
+sign = ["dep:alloy-signer-local"]
+example = ["dep:tokio", "sign", "client"]

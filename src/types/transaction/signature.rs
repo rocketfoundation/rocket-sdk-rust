@@ -1,6 +1,4 @@
-use alloy_primitives::{keccak256, Address, Signature as AlloySignature, B256, B512};
-use alloy_signer::SignerSync;
-use alloy_signer_local::PrivateKeySigner;
+use alloy_primitives::{keccak256, Signature as AlloySignature, B256};
 use alloy_sol_types::{sol, Eip712Domain, SolStruct};
 use serde::{Deserialize, Serialize};
 
@@ -61,6 +59,12 @@ pub struct Signature(
     /// The raw alloy signature value.
     AlloySignature,
 );
+
+impl From<AlloySignature> for Signature {
+    fn from(value: AlloySignature) -> Self {
+        Self(value)
+    }
+}
 
 impl Default for Signature {
     fn default() -> Self {
@@ -129,78 +133,5 @@ impl<'de> Deserialize<'de> for Signature {
         let bytes = hex::decode(hex_str).map_err(serde::de::Error::custom)?;
         let signature = AlloySignature::from_raw(&bytes).map_err(serde::de::Error::custom)?;
         Ok(Signature(signature))
-    }
-}
-
-/// An account signer that can sign messages.
-#[derive(Clone, Debug)]
-pub struct AccountSigner {
-    /// Underlying private key signer.
-    pub signer: PrivateKeySigner,
-}
-
-impl AccountSigner {
-    /// Create a dummy signer for testing.
-    pub fn dummy() -> Self {
-        Self {
-            signer: "0x1111111111111111111111111111111111111111111111111111111111111111"
-                .to_string()
-                .parse()
-                .unwrap(),
-        }
-    }
-
-    /// Get the public key.
-    pub fn public_key(&self) -> B512 {
-        self.signer.public_key()
-    }
-
-    /// Get the Ethereum address.
-    pub fn address(&self) -> Address {
-        self.signer.address()
-    }
-
-    /// Get the account address.
-    pub fn account_address(&self) -> AccountAddress {
-        AccountAddress::from(self.address())
-    }
-
-    /// Create a signer from a hex-encoded private key.
-    pub fn from_hex_key(secret_key: String) -> Self {
-        let secret_key = secret_key.trim().strip_prefix("0x").unwrap_or(&secret_key);
-        let signer: PrivateKeySigner = secret_key.parse().unwrap();
-        Self { signer }
-    }
-
-    /// Sign a message using EIP-191.
-    pub fn sign(&mut self, message: &[u8]) -> Signature {
-        self.sign_with_scheme(message, SignatureScheme::Eip191)
-    }
-
-    /// Sign a message with the specified scheme.
-    pub fn sign_with_scheme(&mut self, message: &[u8], scheme: SignatureScheme) -> Signature {
-        match scheme {
-            SignatureScheme::Eip191 => {
-                let signature = self
-                    .signer
-                    .sign_message_sync(message)
-                    .expect("Failed to sign message");
-                Signature(signature)
-            }
-            SignatureScheme::Eip712 => {
-                let digest = eip712_signing_hash(message);
-                let signature = self
-                    .signer
-                    .sign_hash_sync(&digest)
-                    .expect("Failed to sign EIP-712 hash");
-                Signature(signature)
-            }
-        }
-    }
-}
-
-impl From<PrivateKeySigner> for AccountSigner {
-    fn from(signer: PrivateKeySigner) -> Self {
-        Self { signer }
     }
 }
