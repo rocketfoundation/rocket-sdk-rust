@@ -34,7 +34,7 @@ tungstenite = { version = "0.28", optional = true }
 
 [features]
 default = ["json", "endpoints"]
-full = ["json", "endpoints", "messagepack", "client"]
+full = ["json", "endpoints", "messagepack", "client", "sign"]
 json = ["dep:serde_json"]
 messagepack = ["dep:rmp-serde"]
 endpoints = []
