@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Common pagination parameters for REST requests.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PaginationData {
     /// Optional page number to request, default `0`.

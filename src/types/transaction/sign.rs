@@ -198,3 +198,9 @@ impl AccountSigner {
         }
     }
 }
+
+impl From<PrivateKeySigner> for AccountSigner {
+    fn from(signer: PrivateKeySigner) -> Self {
+        Self { signer }
+    }
+}
