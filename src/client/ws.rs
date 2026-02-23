@@ -1,7 +1,10 @@
 use std::{sync::mpsc, thread};
 use tungstenite::{connect, Message};
 
-use crate::types::ws::{client_message::ClientMessage, server_message::ServerMessage};
+use crate::{
+    client::error::ClientError,
+    types::ws::{client_message::ClientMessage, server_message::ServerMessage},
+};
 
 pub enum Command {
     Send(ClientMessage),
@@ -29,7 +32,7 @@ impl WsClient {
     ///
     /// let client_instance = WsClient::connect("ws://127.0.0.1:4000", message_handler);
     /// ```
-    pub fn connect<F>(url: &str, handler: F) -> Result<Self, Box<dyn std::error::Error>>
+    pub fn connect<F>(url: &str, handler: F) -> Result<Self, ClientError>
     where
         F: Fn(ServerMessage) + Send + 'static,
     {
