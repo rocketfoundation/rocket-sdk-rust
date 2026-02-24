@@ -2,7 +2,7 @@
 name = "rocket-chain-sdk"
 version = "0.1.0"
 edition = "2021"
-license = "TODO"
+license = "MIT"
 description = "Rust SDK for Rocket Chain"
 repository = "https://github.com/rocketfoundation/rocket-sdk-rust"
 documentation = "https://github.com/rocketfoundation/rocket-sdk-rust"
