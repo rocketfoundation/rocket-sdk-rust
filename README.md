@@ -6,27 +6,38 @@ This crate provides request/response DTOs, basic clients for both HTTP REST and 
 
 Source, documentation and examples are available on the main repository: <https://github.com/rocketfoundation/rocket-sdk-rust>.
 
+| Environment | Endpoint                             |
+| ----------- | ------------------------------------ |
+| Devnet      | https://devnet.rocket-cluster-1.com  |
+| Testnet     | https://testnet.rocket-cluster-1.com |
+| Beta        | https://beta.rocket-cluster-1.com    |
+
 ---
 
 ## Getting Started
 
-Add the crate to your `Cargo.toml`: 
+Add the crate to your `Cargo.toml`:
+
 ```toml
 rocket-chain-sdk = "0.1"
-``` 
+```
 
 Enable additional features if required:
+
 ```toml
 rocket-chain-sdk = { version = "0.1", features = ["client", "sign"] }
 ```
 
 Or get the barebone data transfer objects by disabling the default features:
+
 ```toml
 rocket-chain-sdk = { version = "0.1", default-features = false }
 ```
+
 ---
 
 ## Cargo Features
+
 The functionality is split into several Cargo features to keep dependencies optional and to let users pick only the pieces they need.
 
 If no features are enabled (`default-features = false`), the crate exports barebone DTOs for REST and WS endpoints request and response types together with some utils for transaction serialization producing and verifying transaction signatures. All DTOs implement `Debug`, `Clone`, `serde::Serialize` and `sedre::Deserialize` for convenience.
