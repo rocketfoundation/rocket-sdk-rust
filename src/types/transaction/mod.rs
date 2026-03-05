@@ -3,7 +3,7 @@ pub mod instruction;
 pub mod response;
 pub mod signature;
 
-use std::cell::OnceCell;
+use std::sync::OnceLock;
 
 use alloy_primitives::TxHash;
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ pub struct Transaction {
     pub signature: Signature,
     /// Cached serialized bytes to avoid re-serializing on verify/hash.
     #[serde(skip)]
-    pub serialized: OnceCell<Vec<u8>>,
+    pub serialized: OnceLock<Vec<u8>>,
 }
 
 impl Transaction {
@@ -108,7 +108,7 @@ impl RawTransaction {
         }
     }
 
-    /// Deserialize the raw transaciton.
+    /// Deserialize the raw transaction.
     pub fn deserialize(
         serialized: &[u8],
         format: SerializationFormat,

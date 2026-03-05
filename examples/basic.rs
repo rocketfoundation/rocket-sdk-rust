@@ -1,8 +1,6 @@
-use std::{str::FromStr, time::Duration};
+use std::time::Duration;
 
-use alloy_signer_local::PrivateKeySigner;
-
-use crate::{
+use rocket_chain_sdk::{
     client::{rest::RestClient, ws::WsClient},
     sign::AccountSigner,
     types::{
@@ -23,24 +21,23 @@ use crate::{
 
 const REST_ENDPOINT_URL: &str = "http://127.0.0.1:3000";
 const WS_ENDPOINT_URL: &str = "ws://127.0.0.1:4000";
-const TX_SENDER_PRIVATE_KEY: &str =
-    "3bd0a2578a016d9a27cae9112fcabf7e6755a3b529c910afffb12129848b4887";
 
 fn incoming_ws_message_handler(message: ServerMessage) {
     println!("\nReceived server message: {message:?}");
 }
 
-#[allow(dead_code)]
-async fn example() {
+#[tokio::main]
+async fn main() {
+    let private_key = std::env::var("ROCKET_PRIVATE_KEY")
+        .expect("ROCKET_PRIVATE_KEY environment variable must be set");
+
     println!("Running example");
-    // Setup clients.
+
     let rest_client = RestClient::new(REST_ENDPOINT_URL).unwrap();
     let ws_client = WsClient::connect(WS_ENDPOINT_URL, incoming_ws_message_handler).unwrap();
-    // Setup signer.
-    let mut signer =
-        AccountSigner::from(PrivateKeySigner::from_str(TX_SENDER_PRIVATE_KEY).unwrap());
 
-    // Track nonce.
+    let mut signer = AccountSigner::from_hex_key(&private_key).unwrap();
+
     let mut nonce: u64 = 0;
     let mut next_nonce = || {
         nonce += 1;
@@ -59,15 +56,12 @@ async fn example() {
     tokio::time::sleep(Duration::from_secs(20)).await;
 }
 
-// Mint authority-only transactions
 async fn send_mint_authority_transactions(
     signer: &mut AccountSigner,
     rest_client: &RestClient,
     next_nonce: &mut impl FnMut() -> u64,
 ) -> InstrumentId {
-    // ********
     // List asset
-    // ********
     let list_asset_tx = RawTransaction {
         sender: signer.account_address(),
         nonce: next_nonce(),
@@ -95,9 +89,7 @@ async fn send_mint_authority_transactions(
 
     let asset_id = response.assets[0].id;
 
-    // ********
-    // List intrument
-    // ********
+    // List instrument
     let list_instrument_tx = RawTransaction {
         sender: signer.account_address(),
         nonce: next_nonce(),
@@ -130,9 +122,7 @@ async fn send_mint_authority_transactions(
 
     let instrument_id = response.instruments[0].instrument_id;
 
-    // ********
     // Set is trading
-    // ********
     let set_is_trading_tx = RawTransaction {
         sender: signer.account_address(),
         nonce: next_nonce(),
@@ -149,9 +139,7 @@ async fn send_mint_authority_transactions(
     let response = rest_client.send_request(set_is_trading_tx).await.unwrap();
     println!("\nIs trading response: {response:?}");
 
-    // ********
     // Mint
-    // ********
     let mint_tx = RawTransaction {
         sender: signer.account_address(),
         nonce: next_nonce(),
@@ -175,7 +163,7 @@ fn create_ws_subscriptions(
     account: primitives::AccountAddress,
     instrument_id: primitives::InstrumentId,
 ) {
-    // Subsscribe to order events for an account.
+    // Subscribe to order events for an account.
     ws_client.send(ClientMessage::Subscribe(SubscriptionKind::OrderEvents {
         account: Some(account.clone()),
         instrument_id: Some(instrument_id),
@@ -192,16 +180,13 @@ fn create_ws_subscriptions(
     }));
 }
 
-// Transactions any user can send
 async fn send_user_transactions(
     signer: &mut AccountSigner,
     rest_client: &RestClient,
     next_nonce: &mut impl FnMut() -> u64,
     instrument_id: InstrumentId,
 ) {
-    // ********
     // Place limit order
-    // ********
     let place_order_tx = RawTransaction {
         sender: signer.account_address(),
         nonce: next_nonce(),
@@ -227,11 +212,8 @@ async fn send_user_transactions(
     println!("\nPlace order response: {response:?}");
 }
 
-// Request data form Rest endpoint
 async fn request_data(rest_client: &RestClient, account: AccountAddress) {
-    // ********
     // Get list of assets
-    // ********
     let assets_response = rest_client
         .send_request(rest::assets::GetAssets {
             pagination_data: rest::pagination::PaginationData {
@@ -244,9 +226,7 @@ async fn request_data(rest_client: &RestClient, account: AccountAddress) {
 
     println!("\nAssets response: {assets_response:?}");
 
-    // ********
     // Get list of instruments
-    // ********
     let instruments_response = rest_client
         .send_request(rest::instruments::GetInstruments {
             pagination_data: rest::pagination::PaginationData {
@@ -259,9 +239,7 @@ async fn request_data(rest_client: &RestClient, account: AccountAddress) {
 
     println!("\nInstruments response: {instruments_response:?}");
 
-    // ********
     // Get account's orders
-    // ********
     let open_orders_response = rest_client
         .send_request(rest::open_orders::GetOpenOrders {
             account,
@@ -271,15 +249,4 @@ async fn request_data(rest_client: &RestClient, account: AccountAddress) {
         .unwrap();
 
     println!("\nOpen orders response: {open_orders_response:?}");
-}
-
-#[cfg(test)]
-mod run_example {
-    use super::*;
-
-    #[ignore]
-    #[tokio::test]
-    async fn run_example() {
-        example().await
-    }
 }

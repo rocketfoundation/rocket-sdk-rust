@@ -29,8 +29,10 @@ alloy-signer-local = {version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true }
 rmp-serde = { version = "1", optional = true }
 reqwest = { version = "0.13.2", optional = true, features = ["query"] }
-tokio = { version = "1", optional = true, default-features = false, features = ["rt", "macros"] }
 tungstenite = { version = "0.28", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "time"] }
 
 [features]
 default = ["json", "endpoints"]
@@ -40,4 +42,7 @@ messagepack = ["dep:rmp-serde"]
 endpoints = []
 client = ["dep:reqwest", "dep:serde_json", "dep:tungstenite", "endpoints"]
 sign = ["dep:alloy-signer-local"]
-example = ["dep:tokio", "sign", "client"]
+
+[[example]]
+name = "basic"
+required-features = ["sign", "client"]

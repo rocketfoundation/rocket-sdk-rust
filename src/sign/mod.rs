@@ -1,6 +1,6 @@
 pub mod error;
 
-use std::cell::OnceCell;
+use std::sync::OnceLock;
 
 use alloy_primitives::{Address, B512};
 use alloy_signer::SignerSync;
@@ -51,10 +51,14 @@ impl AccountSigner {
     }
 
     /// Create a signer from a hex-encoded private key.
-    pub fn from_hex_key(secret_key: String) -> Self {
-        let secret_key = secret_key.trim().strip_prefix("0x").unwrap_or(&secret_key);
-        let signer: PrivateKeySigner = secret_key.parse().unwrap();
-        Self { signer }
+    pub fn from_hex_key(secret_key: &str) -> Result<Self, SignError> {
+        let secret_key = secret_key.trim().strip_prefix("0x").unwrap_or(secret_key);
+        let signer: PrivateKeySigner = secret_key
+            .parse()
+            .map_err(|e: alloy_signer_local::LocalSignerError| {
+                SignError::KeyParse(e.to_string())
+            })?;
+        Ok(Self { signer })
     }
 
     /// Sign a message using EIP-191.
@@ -114,7 +118,7 @@ impl RawTransaction {
             serialization_format: format.clone(),
             signature_scheme: scheme,
             signature,
-            serialized: OnceCell::from(serialized),
+            serialized: OnceLock::from(serialized),
         })
     }
 }
@@ -130,15 +134,17 @@ mod tests {
     /// Creates a test signer with a known private key
     fn test_signer() -> AccountSigner {
         AccountSigner::from_hex_key(
-            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
+            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
         )
+        .unwrap()
     }
 
     /// Creates a different signer to simulate wrong signer
     fn wrong_signer() -> AccountSigner {
         AccountSigner::from_hex_key(
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d".to_string(),
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
         )
+        .unwrap()
     }
 
     fn create_test_raw_tx(sender: &AccountAddress) -> RawTransaction {
@@ -183,7 +189,7 @@ mod tests {
             serialization_format: SerializationFormat::JSON,
             signature_scheme: SignatureScheme::Eip191,
             signature: wrong_signature,
-            serialized: OnceCell::new(),
+            serialized: OnceLock::new(),
         };
 
         // Invalid signature should fail verification
@@ -217,7 +223,7 @@ mod tests {
             serialization_format: signed_tx.serialization_format,
             signature_scheme: signed_tx.signature_scheme,
             signature: signed_tx.signature,
-            serialized: OnceCell::new(),
+            serialized: OnceLock::new(),
         };
 
         // Tampered transaction should fail verification
@@ -239,7 +245,7 @@ mod tests {
             serialization_format: SerializationFormat::JSON,
             signature_scheme: SignatureScheme::Eip191,
             signature: Signature::default(),
-            serialized: OnceCell::new(),
+            serialized: OnceLock::new(),
         };
 
         // Default signature should fail verification

@@ -4,6 +4,8 @@ use crate::types::transaction::error::TxSerdeError;
 pub enum SignError {
     #[error("Failed to sign message: {0}")]
     MessageSign(#[from] alloy_signer::Error),
+    #[error("Failed to parse private key: {0}")]
+    KeyParse(String),
 }
 
 #[derive(Debug, thiserror::Error)]

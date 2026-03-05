@@ -40,18 +40,30 @@ rocket-chain-sdk = { version = "0.1", default-features = false }
 
 The functionality is split into several Cargo features to keep dependencies optional and to let users pick only the pieces they need.
 
-If no features are enabled (`default-features = false`), the crate exports barebone DTOs for REST and WS endpoints request and response types together with some utils for transaction serialization producing and verifying transaction signatures. All DTOs implement `Debug`, `Clone`, `serde::Serialize` and `sedre::Deserialize` for convenience.
+If no features are enabled (`default-features = false`), the crate exports barebone DTOs for REST and WS endpoints request and response types together with some utils for transaction serialization producing and verifying transaction signatures. All DTOs implement `Debug`, `Clone`, `serde::Serialize` and `serde::Deserialize` for convenience.
 
 Default features are `json` and `endpoints` (see below).
 
-Use the `full` feature flag to get all the potentially useful funcitonality this crate provides.
+Use the `full` feature flag to get all the potentially useful functionality this crate provides.
 
 `json` and `messagepack` features provide functionality for transaction (de)serialization in JSON and MessagePack formats.
 
 The `endpoints` feature provides a `RocketChainRequest` trait that bounds together request and response types for REST along with corresponding endpoint names. It's designed to facilitate client development.
 
-`sign` feature provides funcitonality for signing transactions using [PrivateKeySigner](https://docs.rs/alloy-signer-local/latest/alloy_signer_local/type.PrivateKeySigner.html) from the `alloy` crate.
+`sign` feature provides functionality for signing transactions using [PrivateKeySigner](https://docs.rs/alloy-signer-local/latest/alloy_signer_local/type.PrivateKeySigner.html) from the `alloy` crate.
 
 `client` feature provides minimalistic reference implementations for REST and WS client using [`reqwest`](https://crates.io/crates/reqwest) and [`tungstenite`](https://crates.io/crates/tungstenite).
 
-The `example` directory contains examples of sending various transactions, requesting data and creating data stream subscriptions.
+---
+
+## Examples
+
+The `examples/` directory contains examples of sending various transactions, requesting data and creating data stream subscriptions.
+
+To run the basic example:
+
+```bash
+ROCKET_PRIVATE_KEY="your_hex_private_key" cargo run --example basic --features sign,client
+```
+
+The `ROCKET_PRIVATE_KEY` environment variable should be a hex-encoded private key (with or without the `0x` prefix).
