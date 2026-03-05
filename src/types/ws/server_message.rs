@@ -1,4 +1,5 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 
 use crate::types::{
     primitives::{AccountAddress, AssetId, BlockTimestamp, InstrumentId},
@@ -11,7 +12,7 @@ use crate::types::{
 };
 
 /// Messages sent from the server to connected clients.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub enum ServerMessage {
     /// New quote for an instrument.
     QuoteUpdate {
@@ -158,4 +159,61 @@ pub enum ServerMessage {
     Pong,
     /// Error message from the server.
     Error(String),
+}
+
+impl<'de> Deserialize<'de> for ServerMessage {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        const VARIANTS: &[&str] = &[
+            "QuoteUpdate",
+            "OrderbookUpdate",
+            "MarkPriceUpdate",
+            "AssetMarkPriceUpdate",
+            "OrderEventUpdate",
+            "CollateralUpdate",
+            "PositionUpdate",
+            "AccountRiskUpdate",
+            "OpenOrdersUpdate",
+            "FundingRateUpdate",
+            "InstrumentStatsUpdate",
+            "CandleUpdate",
+            "PositionFundingUpdate",
+            "LastMatchPriceUpdate",
+            "SubscribeConfirmation",
+            "UnsubscribeConfirmation",
+            "Pong",
+            "Error",
+        ];
+
+        let value = Value::deserialize(deserializer)?;
+
+        // If the top-level object has a variant name key, use normal enum deserialization.
+        if let Value::Object(map) = &value {
+            if map.keys().any(|k| VARIANTS.contains(&k.as_str())) {
+                return serde_json::from_value(value).map_err(serde::de::Error::custom);
+            }
+        }
+
+        // Otherwise treat it as contents of OrderEventUpdate.
+        #[derive(Deserialize)]
+        struct OrderEventUpdateInner {
+            #[serde(default)]
+            account: Option<AccountAddress>,
+            #[serde(rename = "instrumentId", default)]
+            instrument_id: Option<InstrumentId>,
+            #[serde(rename = "orderEvents")]
+            order_events: Vec<OrderEventClientView>,
+        }
+
+        let inner: OrderEventUpdateInner =
+            serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+
+        Ok(ServerMessage::OrderEventUpdate {
+            account: inner.account,
+            instrument_id: inner.instrument_id,
+            order_events: inner.order_events,
+        })
+    }
 }
