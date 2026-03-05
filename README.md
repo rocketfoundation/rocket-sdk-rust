@@ -6,11 +6,11 @@ This crate provides request/response DTOs, basic clients for both HTTP REST and 
 
 Source, documentation and examples are available on the main repository: <https://github.com/rocketfoundation/rocket-sdk-rust>.
 
-| Environment | Endpoint                             |
-| ----------- | ------------------------------------ |
-| Devnet      | https://devnet.rocket-cluster-1.com  |
-| Testnet     | https://testnet.rocket-cluster-1.com |
-| Beta        | https://beta.rocket-cluster-1.com    |
+| Environment | Rest Endpoint                        | Websocket Endpoint                 |
+| ----------- | ------------------------------------ | ---------------------------------- |
+| Devnet      | https://devnet.rocket-cluster-1.com  | wss://devnet.rocket-cluster-1.com  |
+| Testnet     | https://testnet.rocket-cluster-1.com | wss://testnet.rocket-cluster-1.com |
+| Beta        | https://beta.rocket-cluster-1.com    | wss://beta.rocket-cluster-1.com    |
 
 ---
 
