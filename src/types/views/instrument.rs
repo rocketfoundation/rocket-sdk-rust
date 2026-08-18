@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{macros::impl_as_ref_mut_newtype, types::primitives::InstrumentId};
+use crate::{
+    macros::impl_as_ref_mut_newtype,
+    types::primitives::{BlockTimestamp, InstrumentId},
+};
 
 /// Set of instruments mapped by their identifiers.
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
@@ -48,5 +51,5 @@ pub struct InstrumentView {
     pub max_leverage_margin: Option<String>,
     /// Listing timestamp in milliseconds, when known.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub listed_at: Option<crate::types::primitives::BlockTimestamp>,
+    pub listed_at: Option<BlockTimestamp>,
 }
