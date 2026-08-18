@@ -48,6 +48,9 @@ pub enum OrderEventDataClientView {
         fee_amount: String,
         /// Whether this was a liquidation fill.
         is_liquidation: bool,
+        /// Whether this was an auto-deleveraging fill.
+        #[serde(default)]
+        is_adl: bool,
     },
     /// Order was placed but not yet executed.
     Placed {
@@ -95,4 +98,8 @@ pub enum RejectionReason {
     NotEnoughLiquidity,
     /// Rejected due to excessive slippage.
     TooMuchSlippage,
+    /// Rejected because the order would have matched against the same account.
+    SelfTradePrevention,
+    /// Rejected because market-maker protection was triggered.
+    MarketMakerProtection,
 }

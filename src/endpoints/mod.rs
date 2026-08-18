@@ -51,6 +51,16 @@ impl RocketChainRequest for rest::collateral::GetCollateral {
     const ENDPOINT: &str = "collateral";
 }
 
+impl RocketChainRequest for rest::delegate_traders::GetDelegateTraders {
+    type Response = rest::delegate_traders::GetDelegateTradersResponse;
+    const ENDPOINT: &str = "delegate-traders";
+}
+
+impl RocketChainRequest for rest::expirations::GetExpirations {
+    type Response = rest::expirations::GetExpirationsResponse;
+    const ENDPOINT: &str = "expirations";
+}
+
 impl RocketChainRequest for rest::faucet_claim::GetFaucetClaim {
     type Response = rest::faucet_claim::GetFaucetClaimResponse;
     const ENDPOINT: &str = "faucet-claim";
@@ -66,9 +76,19 @@ impl RocketChainRequest for rest::funding_rate_events::GetFundingRateEvents {
     const ENDPOINT: &str = "funding-rate-events";
 }
 
+impl RocketChainRequest for rest::instrument_details::GetInstrumentDetails {
+    type Response = rest::instrument_details::GetInstrumentDetailsResponse;
+    const ENDPOINT: &str = "instrument-details";
+}
+
 impl RocketChainRequest for rest::instruments::GetInstruments {
     type Response = rest::instruments::GetInstrumentsResponse;
     const ENDPOINT: &str = "instruments";
+}
+
+impl RocketChainRequest for rest::leaderboard::GetLeaderboard {
+    type Response = rest::leaderboard::GetLeaderboardResponse;
+    const ENDPOINT: &str = "leaderboard";
 }
 
 impl RocketChainRequest for rest::max_leverage::GetMaxLeverage {
@@ -86,6 +106,16 @@ impl RocketChainRequest for rest::order_events::GetAccountOrderEvents {
     const ENDPOINT: &str = "order-events";
 }
 
+impl RocketChainRequest for rest::order_history::GetOrderHistory {
+    type Response = rest::order_history::GetOrderHistoryResponse;
+    const ENDPOINT: &str = "order-history";
+}
+
+impl RocketChainRequest for rest::portfolio::GetPortfolio {
+    type Response = rest::portfolio::GetPortfolioResponse;
+    const ENDPOINT: &str = "portfolio";
+}
+
 impl RocketChainRequest for rest::position_funding_events::GetAccountPositionFundingEvents {
     type Response = rest::position_funding_events::GetPositionFundingEventsResponse;
     const ENDPOINT: &str = "position-funding-events";
@@ -96,9 +126,29 @@ impl RocketChainRequest for rest::position::GetPosition {
     const ENDPOINT: &str = "position";
 }
 
+impl RocketChainRequest for rest::trades::GetTrades {
+    type Response = rest::trades::GetTradesResponse;
+    const ENDPOINT: &str = "trades";
+}
+
+impl RocketChainRequest for rest::vault_depositors::GetVaultDepositors {
+    type Response = rest::vault_depositors::GetVaultDepositorsResponse;
+    const ENDPOINT: &str = "vault-depositors";
+}
+
+impl RocketChainRequest for rest::vault_events::GetVaultEvents {
+    type Response = rest::vault_events::GetVaultEventsResponse;
+    const ENDPOINT: &str = "vault-events";
+}
+
 impl RocketChainRequest for rest::vault_history::GetVaultHistory {
     type Response = rest::vault_history::GetVaultHistoryResponse;
     const ENDPOINT: &str = "vault-history";
+}
+
+impl RocketChainRequest for rest::vault_portfolio::GetVaultPortfolio {
+    type Response = rest::vault_portfolio::GetVaultPortfolioResponse;
+    const ENDPOINT: &str = "vault-portfolio";
 }
 
 impl RocketChainRequest for rest::vault_stats::GetVaultStats {

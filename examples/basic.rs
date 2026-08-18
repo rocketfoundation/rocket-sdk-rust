@@ -201,6 +201,7 @@ async fn send_user_transactions(
                     trigger_price: None,
                     reduce_only: false,
                     take_profit: false,
+                    mmp_tag: None,
                 },
             ),
         ])),
@@ -233,6 +234,9 @@ async fn request_data(rest_client: &RestClient, account: AccountAddress) {
                 page_number: Some(0),
                 page_size: Some(100),
             },
+            contract_type: None,
+            expiry: None,
+            underlying_asset: None,
         })
         .await
         .unwrap();

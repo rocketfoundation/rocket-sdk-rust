@@ -22,6 +22,10 @@ pub enum TransactionResponse {
     VaultWithdraw(VaultWithdrawTransactionResponse),
     /// Response for a delegate manager transaction.
     DelegateManager(DelegateManagerTransactionResponse),
+    /// Response for removing a delegate manager.
+    RemoveDelegateManager(RemoveDelegateManagerTransactionResponse),
+    /// Response for clearing web-client delegates.
+    RemoveWebclientDelegates(RemoveWebclientDelegatesTransactionResponse),
     /// Response to oracle configuration update.
     UpdateOracleConfig(UpdateOracleConfigResponse),
     /// List assets response.
@@ -77,6 +81,22 @@ pub struct DelegateManagerTransactionResponse {
     pub delegator: AccountAddress,
     /// Address of the new manager.
     pub manager: AccountAddress,
+}
+
+/// Response for removing a delegate manager.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RemoveDelegateManagerTransactionResponse {
+    /// Address of the delegator.
+    pub delegator: AccountAddress,
+    /// Address of the removed manager.
+    pub manager: AccountAddress,
+}
+
+/// Response for clearing web-client delegates.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RemoveWebclientDelegatesTransactionResponse {
+    /// Number of removed web-client delegates.
+    pub removed_count: u64,
 }
 
 /// Response for oracle configuration update. Contains the applied changes.
@@ -135,6 +155,66 @@ impl<'de> Deserialize<'de> for TransactionResponse {
             return Ok(TransactionResponse::Ok);
         }
 
+        // WS `TransactionResult` serializes the tagged enum form.
+        const TAGGED: &[&str] = &[
+            "PlaceOrder",
+            "CreateVault",
+            "VaultDeposit",
+            "VaultWithdraw",
+            "DelegateManager",
+            "RemoveDelegateManager",
+            "RemoveWebclientDelegates",
+            "UpdateOracleConfig",
+            "ListAssets",
+            "ListInstruments",
+            "Ok",
+            "Err",
+        ];
+        if obj.len() == 1 {
+            if let Some(key) = obj.keys().next() {
+                if TAGGED.contains(&key.as_str()) {
+                    #[derive(Deserialize)]
+                    enum Tagged {
+                        PlaceOrder(PlaceOrderTransactionResponse),
+                        CreateVault(CreateVaultTransactionResponse),
+                        VaultDeposit(VaultDepositTransactionResponse),
+                        VaultWithdraw(VaultWithdrawTransactionResponse),
+                        DelegateManager(DelegateManagerTransactionResponse),
+                        RemoveDelegateManager(RemoveDelegateManagerTransactionResponse),
+                        RemoveWebclientDelegates(RemoveWebclientDelegatesTransactionResponse),
+                        UpdateOracleConfig(UpdateOracleConfigResponse),
+                        ListAssets(ListAssetsResponse),
+                        ListInstruments(ListInstrumentsResponse),
+                        Err(String),
+                        Ok,
+                    }
+
+                    return serde_json::from_value::<Tagged>(value)
+                        .map(|tagged| match tagged {
+                            Tagged::PlaceOrder(v) => TransactionResponse::PlaceOrder(v),
+                            Tagged::CreateVault(v) => TransactionResponse::CreateVault(v),
+                            Tagged::VaultDeposit(v) => TransactionResponse::VaultDeposit(v),
+                            Tagged::VaultWithdraw(v) => TransactionResponse::VaultWithdraw(v),
+                            Tagged::DelegateManager(v) => TransactionResponse::DelegateManager(v),
+                            Tagged::RemoveDelegateManager(v) => {
+                                TransactionResponse::RemoveDelegateManager(v)
+                            }
+                            Tagged::RemoveWebclientDelegates(v) => {
+                                TransactionResponse::RemoveWebclientDelegates(v)
+                            }
+                            Tagged::UpdateOracleConfig(v) => {
+                                TransactionResponse::UpdateOracleConfig(v)
+                            }
+                            Tagged::ListAssets(v) => TransactionResponse::ListAssets(v),
+                            Tagged::ListInstruments(v) => TransactionResponse::ListInstruments(v),
+                            Tagged::Err(v) => TransactionResponse::Err(v),
+                            Tagged::Ok => TransactionResponse::Ok,
+                        })
+                        .map_err(serde::de::Error::custom);
+                }
+            }
+        }
+
         if obj.contains_key("results") {
             return serde_json::from_value::<PlaceOrderTransactionResponse>(value)
                 .map(TransactionResponse::PlaceOrder)
@@ -155,6 +235,12 @@ impl<'de> Deserialize<'de> for TransactionResponse {
                     .map(TransactionResponse::CreateVault)
                     .map_err(serde::de::Error::custom);
             }
+        }
+
+        if obj.contains_key("removed_count") {
+            return serde_json::from_value::<RemoveWebclientDelegatesTransactionResponse>(value)
+                .map(TransactionResponse::RemoveWebclientDelegates)
+                .map_err(serde::de::Error::custom);
         }
 
         if obj.contains_key("delegator") {

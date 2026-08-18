@@ -20,6 +20,9 @@ pub struct VaultView {
     pub manager: AccountAddress,
     /// Asset identifier.
     pub asset: AssetId,
+    /// Whether this vault is the protocol main vault.
+    #[serde(default, rename = "isMain")]
+    pub is_main: bool,
     /// Creation timestamp of the vault.
     #[serde(rename = "creationTimestamp")]
     pub creation_timestamp: BlockTimestamp,

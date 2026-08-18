@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::types::ws::subscription_kind::SubscriptionKind;
+use crate::types::{transaction::Transaction, ws::subscription_kind::SubscriptionKind};
 
 /// Messages sent by clients over the WebSocket connection.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11,4 +11,10 @@ pub enum ClientMessage {
     Unsubscribe(SubscriptionKind),
     /// Ping message to keep the connection alive.
     Ping,
+    /// Submit a signed transaction for immediate execution (same semantics as REST).
+    SubmitTransaction(Transaction),
+    /// Store a signed `Deferred` transaction and submit it when this WebSocket disconnects.
+    RegisterExecuteOnDisconnect(Transaction),
+    /// Clear any execute-on-disconnect registration without submitting it.
+    ClearExecuteOnDisconnect,
 }

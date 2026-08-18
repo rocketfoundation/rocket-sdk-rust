@@ -46,4 +46,7 @@ pub struct InstrumentView {
     /// Max leverage margin.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub max_leverage_margin: Option<String>,
+    /// Listing timestamp in milliseconds, when known.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub listed_at: Option<crate::types::primitives::BlockTimestamp>,
 }

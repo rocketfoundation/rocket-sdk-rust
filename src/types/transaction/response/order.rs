@@ -15,6 +15,9 @@ pub enum PlaceOrderResult {
     Success(OrderEvent),
     /// Order placing failed with an error message.
     Err(String),
+    /// Cancellation events for every order matched by a `CancelAll` request.
+    /// Empty when no open order matched the filters.
+    CancelAll(Vec<OrderEvent>),
 }
 
 /// Event data returned when an order action occurs.
@@ -69,6 +72,9 @@ pub enum OrderEventData {
         abs_position_size_change: QuantityTick,
         /// Indicates if the fill was part of a liquidation.
         is_liquidation: bool,
+        /// Indicates if the fill was an auto-deleveraging fill.
+        #[serde(default)]
+        is_adl: bool,
     },
     /// The order has been placed but not yet matched.
     Placed {

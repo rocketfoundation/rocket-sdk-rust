@@ -1,31 +1,36 @@
 use serde::{Deserialize, Serialize};
 
 use crate::types::{
-    primitives::AccountAddress, rest::pagination::PaginationData,
-    views::vault_history::VaultHistoryClientView,
+    primitives::{AccountAddress, BlockTimestamp, CandleTimeframe},
+    views::portfolio::{PortfolioCurvePoint, VaultHistoryStats},
 };
 
-/// Query parameters for vault history.
+/// Query parameters for vault history (indexer).
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetVaultHistory {
     /// Vault address.
-    pub vault: AccountAddress,
-    /// User address (optional).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user: Option<AccountAddress>,
-    /// Pagination params.
-    #[serde(flatten, default)]
-    pub pagination_data: PaginationData,
+    pub address: AccountAddress,
+    /// Start timestamp in milliseconds (inclusive). Use 0 for all available history.
+    pub from: BlockTimestamp,
+    /// End timestamp in milliseconds (inclusive). Use 0 for the latest available snapshot.
+    pub to: BlockTimestamp,
+    /// Aggregation interval for the return and NAV curves.
+    pub interval: CandleTimeframe,
 }
 
-/// Response containing vault history entries with human-readable values.
+/// Vault returns, NAV, TVL, annualized APR, and summary stats.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetVaultHistoryResponse {
-    /// Collection of vault events.
-    pub history: VaultHistoryClientView,
-    /// Pagination data from the request.
-    #[serde(flatten, default)]
-    pub pagination_data: PaginationData,
+    /// Return curve derived from vault account equity snapshots.
+    pub returns: Vec<PortfolioCurvePoint>,
+    /// Per-share NAV curve normalized to 1.0 at the vault's first positive NAV.
+    pub nav: Vec<PortfolioCurvePoint>,
+    /// TVL curve derived from vault account equity snapshots.
+    pub tvl: Vec<PortfolioCurvePoint>,
+    /// Annualized percentage return as a decimal string.
+    pub apr: String,
+    /// Summary stats derived from the per-share NAV returns over the requested range.
+    pub vault_stats: VaultHistoryStats,
 }

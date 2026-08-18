@@ -16,4 +16,8 @@ pub struct GetAccountNonce {
 pub struct GetAccountNonceResponse {
     /// The current transaction nonce for the account (0 for new accounts).
     pub nonce: u64,
+    /// The current deferred nonce for the account (0 for new accounts).
+    /// Used by `Deferred` instructions; independent of `nonce`.
+    #[serde(default)]
+    pub deferred_nonce: u64,
 }

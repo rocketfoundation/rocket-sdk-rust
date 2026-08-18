@@ -3,10 +3,18 @@ use serde_json::Value;
 
 use crate::types::{
     primitives::{AccountAddress, AssetId, BlockTimestamp, InstrumentId},
+    transaction::{response::TransactionResponse, signature::Signature},
     views::{
-        account_risk::AccountView, candle::CandleView, instrument_stats::InstrumentStatsView,
-        mark_price::MarkPriceView, open_order::OpenOrderView, order_event::OrderEventClientView,
-        orderbook::OrderbookView, position::PositionSetView, quote::QuoteView,
+        account_risk::AccountView,
+        auction_fill::AuctionFillEntry,
+        candle::CandleView,
+        instrument_stats::InstrumentStatsView,
+        mark_price::MarkPriceView,
+        open_order::OpenOrderView,
+        order_event::OrderEventClientView,
+        orderbook::OrderbookView,
+        position::PositionSetView,
+        quote::{QuoteView, TickerView},
     },
     ws::subscription_kind::SubscriptionKind,
 };
@@ -112,14 +120,6 @@ pub enum ServerMessage {
         /// Round number associated with the update.
         round: u64,
     },
-    /// Instrument statistics update.
-    InstrumentStatsUpdate {
-        /// Instrument id.
-        #[serde(rename = "instrumentId")]
-        instrument_id: InstrumentId,
-        /// Statistics details.
-        stats: InstrumentStatsView,
-    },
     /// New candle.
     CandleUpdate {
         /// Candle information.
@@ -151,14 +151,316 @@ pub enum ServerMessage {
         #[serde(rename = "lastMatchPrice")]
         last_match_price: String,
     },
+    /// Auction fill batch for an instrument.
+    AuctionFillUpdate {
+        /// Instrument id.
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        /// Shared auction price as a decimal string.
+        price: String,
+        /// Compact fills in the batch.
+        fills: Vec<AuctionFillEntry>,
+    },
+    /// Compact ticker update.
+    TickerUpdate {
+        /// Instrument id.
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        /// Compact ticker payload.
+        #[serde(rename = "ticker")]
+        ticker: TickerView,
+    },
+    /// Instrument statistics update.
+    InstrumentStatsUpdate {
+        /// Instrument id.
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        /// Statistics details.
+        #[serde(rename = "instrumentStats")]
+        instrument_stats: InstrumentStatsView,
+    },
     /// Acknowledgement of subscription.
     SubscribeConfirmation(SubscriptionKind),
     /// Acknowledgement of unsubscription.
     UnsubscribeConfirmation(SubscriptionKind),
+    /// Immediate result of a WebSocket `SubmitTransaction`.
+    TransactionResult {
+        signature: Signature,
+        response: TransactionResponse,
+    },
+    /// Confirmation that a Deferred was stored for execute-on-disconnect.
+    ExecuteOnDisconnectRegistered {
+        signature: Signature,
+        #[serde(rename = "deferredNonce")]
+        deferred_nonce: u64,
+    },
+    /// Confirmation that any execute-on-disconnect registration for this connection was cleared.
+    ExecuteOnDisconnectCleared,
     /// Ping response.
     Pong,
     /// Error message from the server.
     Error(String),
+}
+
+/// Tagged wire form used so deserialization does not recurse through [`ServerMessage`].
+#[derive(Deserialize)]
+enum ServerMessageTagged {
+    QuoteUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        #[serde(rename = "quote")]
+        quote: QuoteView,
+    },
+    OrderbookUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        orderbook: OrderbookView,
+    },
+    MarkPriceUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        #[serde(rename = "markPrice")]
+        mark_price: MarkPriceView,
+    },
+    AssetMarkPriceUpdate {
+        #[serde(rename = "assetId")]
+        asset_id: AssetId,
+        #[serde(rename = "markPrice")]
+        mark_price: MarkPriceView,
+    },
+    OrderEventUpdate {
+        #[serde(default, rename = "account")]
+        account: Option<AccountAddress>,
+        #[serde(default, rename = "instrumentId")]
+        instrument_id: Option<InstrumentId>,
+        #[serde(rename = "orderEvents")]
+        order_events: Vec<OrderEventClientView>,
+    },
+    CollateralUpdate {
+        #[serde(rename = "assetId")]
+        asset_id: AssetId,
+        account: AccountAddress,
+        collateral: String,
+    },
+    PositionUpdate {
+        account: AccountAddress,
+        positions: PositionSetView,
+    },
+    AccountRiskUpdate {
+        account: AccountAddress,
+        risk: AccountView,
+    },
+    OpenOrdersUpdate {
+        account: AccountAddress,
+        orders: Vec<OpenOrderView>,
+    },
+    FundingRateUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        #[serde(rename = "fundingRate")]
+        funding_rate: String,
+        #[serde(rename = "premiumIndex")]
+        premium_index: String,
+        timestamp: BlockTimestamp,
+        round: u64,
+    },
+    CandleUpdate {
+        candle: CandleView,
+    },
+    PositionFundingUpdate {
+        account: AccountAddress,
+        #[serde(rename = "fundingRate")]
+        funding_rate: String,
+        timestamp: BlockTimestamp,
+        round: u64,
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        pnl: String,
+    },
+    LastMatchPriceUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        #[serde(rename = "lastMatchPrice")]
+        last_match_price: String,
+    },
+    AuctionFillUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        price: String,
+        fills: Vec<AuctionFillEntry>,
+    },
+    TickerUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        #[serde(rename = "ticker")]
+        ticker: TickerView,
+    },
+    InstrumentStatsUpdate {
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+        #[serde(rename = "instrumentStats", alias = "stats")]
+        instrument_stats: InstrumentStatsView,
+    },
+    SubscribeConfirmation(SubscriptionKind),
+    UnsubscribeConfirmation(SubscriptionKind),
+    TransactionResult {
+        signature: Signature,
+        response: TransactionResponse,
+    },
+    ExecuteOnDisconnectRegistered {
+        signature: Signature,
+        #[serde(rename = "deferredNonce")]
+        deferred_nonce: u64,
+    },
+    ExecuteOnDisconnectCleared,
+    Pong,
+    Error(String),
+}
+
+impl From<ServerMessageTagged> for ServerMessage {
+    fn from(value: ServerMessageTagged) -> Self {
+        match value {
+            ServerMessageTagged::QuoteUpdate {
+                instrument_id,
+                quote,
+            } => ServerMessage::QuoteUpdate {
+                instrument_id,
+                quote,
+            },
+            ServerMessageTagged::OrderbookUpdate {
+                instrument_id,
+                orderbook,
+            } => ServerMessage::OrderbookUpdate {
+                instrument_id,
+                orderbook,
+            },
+            ServerMessageTagged::MarkPriceUpdate {
+                instrument_id,
+                mark_price,
+            } => ServerMessage::MarkPriceUpdate {
+                instrument_id,
+                mark_price,
+            },
+            ServerMessageTagged::AssetMarkPriceUpdate {
+                asset_id,
+                mark_price,
+            } => ServerMessage::AssetMarkPriceUpdate {
+                asset_id,
+                mark_price,
+            },
+            ServerMessageTagged::OrderEventUpdate {
+                account,
+                instrument_id,
+                order_events,
+            } => ServerMessage::OrderEventUpdate {
+                account,
+                instrument_id,
+                order_events,
+            },
+            ServerMessageTagged::CollateralUpdate {
+                asset_id,
+                account,
+                collateral,
+            } => ServerMessage::CollateralUpdate {
+                asset_id,
+                account,
+                collateral,
+            },
+            ServerMessageTagged::PositionUpdate { account, positions } => {
+                ServerMessage::PositionUpdate { account, positions }
+            }
+            ServerMessageTagged::AccountRiskUpdate { account, risk } => {
+                ServerMessage::AccountRiskUpdate { account, risk }
+            }
+            ServerMessageTagged::OpenOrdersUpdate { account, orders } => {
+                ServerMessage::OpenOrdersUpdate { account, orders }
+            }
+            ServerMessageTagged::FundingRateUpdate {
+                instrument_id,
+                funding_rate,
+                premium_index,
+                timestamp,
+                round,
+            } => ServerMessage::FundingRateUpdate {
+                instrument_id,
+                funding_rate,
+                premium_index,
+                timestamp,
+                round,
+            },
+            ServerMessageTagged::CandleUpdate { candle } => ServerMessage::CandleUpdate { candle },
+            ServerMessageTagged::PositionFundingUpdate {
+                account,
+                funding_rate,
+                timestamp,
+                round,
+                instrument_id,
+                pnl,
+            } => ServerMessage::PositionFundingUpdate {
+                account,
+                funding_rate,
+                timestamp,
+                round,
+                instrument_id,
+                pnl,
+            },
+            ServerMessageTagged::LastMatchPriceUpdate {
+                instrument_id,
+                last_match_price,
+            } => ServerMessage::LastMatchPriceUpdate {
+                instrument_id,
+                last_match_price,
+            },
+            ServerMessageTagged::AuctionFillUpdate {
+                instrument_id,
+                price,
+                fills,
+            } => ServerMessage::AuctionFillUpdate {
+                instrument_id,
+                price,
+                fills,
+            },
+            ServerMessageTagged::TickerUpdate {
+                instrument_id,
+                ticker,
+            } => ServerMessage::TickerUpdate {
+                instrument_id,
+                ticker,
+            },
+            ServerMessageTagged::InstrumentStatsUpdate {
+                instrument_id,
+                instrument_stats,
+            } => ServerMessage::InstrumentStatsUpdate {
+                instrument_id,
+                instrument_stats,
+            },
+            ServerMessageTagged::SubscribeConfirmation(kind) => {
+                ServerMessage::SubscribeConfirmation(kind)
+            }
+            ServerMessageTagged::UnsubscribeConfirmation(kind) => {
+                ServerMessage::UnsubscribeConfirmation(kind)
+            }
+            ServerMessageTagged::TransactionResult {
+                signature,
+                response,
+            } => ServerMessage::TransactionResult {
+                signature,
+                response,
+            },
+            ServerMessageTagged::ExecuteOnDisconnectRegistered {
+                signature,
+                deferred_nonce,
+            } => ServerMessage::ExecuteOnDisconnectRegistered {
+                signature,
+                deferred_nonce,
+            },
+            ServerMessageTagged::ExecuteOnDisconnectCleared => {
+                ServerMessage::ExecuteOnDisconnectCleared
+            }
+            ServerMessageTagged::Pong => ServerMessage::Pong,
+            ServerMessageTagged::Error(message) => ServerMessage::Error(message),
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for ServerMessage {
@@ -181,22 +483,27 @@ impl<'de> Deserialize<'de> for ServerMessage {
             "CandleUpdate",
             "PositionFundingUpdate",
             "LastMatchPriceUpdate",
+            "AuctionFillUpdate",
+            "TickerUpdate",
             "SubscribeConfirmation",
             "UnsubscribeConfirmation",
+            "TransactionResult",
+            "ExecuteOnDisconnectRegistered",
+            "ExecuteOnDisconnectCleared",
             "Pong",
             "Error",
         ];
 
         let value = Value::deserialize(deserializer)?;
 
-        // If the top-level object has a variant name key, use normal enum deserialization.
         if let Value::Object(map) = &value {
             if map.keys().any(|k| VARIANTS.contains(&k.as_str())) {
-                return serde_json::from_value(value).map_err(serde::de::Error::custom);
+                return serde_json::from_value::<ServerMessageTagged>(value)
+                    .map(Into::into)
+                    .map_err(serde::de::Error::custom);
             }
         }
 
-        // Otherwise treat it as contents of OrderEventUpdate.
         #[derive(Deserialize)]
         struct OrderEventUpdateInner {
             #[serde(default)]

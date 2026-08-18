@@ -53,11 +53,12 @@ impl AccountSigner {
     /// Create a signer from a hex-encoded private key.
     pub fn from_hex_key(secret_key: &str) -> Result<Self, SignError> {
         let secret_key = secret_key.trim().strip_prefix("0x").unwrap_or(secret_key);
-        let signer: PrivateKeySigner = secret_key
-            .parse()
-            .map_err(|e: alloy_signer_local::LocalSignerError| {
-                SignError::KeyParse(e.to_string())
-            })?;
+        let signer: PrivateKeySigner =
+            secret_key
+                .parse()
+                .map_err(|e: alloy_signer_local::LocalSignerError| {
+                    SignError::KeyParse(e.to_string())
+                })?;
         Ok(Self { signer })
     }
 

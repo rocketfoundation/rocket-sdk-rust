@@ -65,12 +65,6 @@ pub enum SubscriptionKind {
         #[serde(rename = "instrumentId")]
         instrument_id: InstrumentId,
     },
-    /// Instrument statistics updates.
-    InstrumentStats {
-        /// Instrument identifier.
-        #[serde(rename = "instrumentId")]
-        instrument_id: InstrumentId,
-    },
     /// Candle price data for an instrument.
     Candle {
         /// Instrument identifier.
@@ -84,8 +78,26 @@ pub enum SubscriptionKind {
         /// Account affected by funding updates.
         account: AccountAddress,
     },
-    /// Lst match price updates.
+    /// Last match price updates.
     LastMatchPrice {
+        /// Instrument identifier.
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+    },
+    /// Auction fill batches for an instrument.
+    AuctionFills {
+        /// Instrument identifier.
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+    },
+    /// Compact best-bid/ask ticker with mark, mid, and option greeks.
+    Ticker {
+        /// Instrument identifier.
+        #[serde(rename = "instrumentId")]
+        instrument_id: InstrumentId,
+    },
+    /// Instrument statistics updates.
+    InstrumentStats {
         /// Instrument identifier.
         #[serde(rename = "instrumentId")]
         instrument_id: InstrumentId,

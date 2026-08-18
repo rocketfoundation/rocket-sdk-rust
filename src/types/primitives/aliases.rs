@@ -13,6 +13,12 @@ pub type Round = u64;
 /// Unique identifier assigned to each order.
 pub type GlobalOrderId = u64;
 
+/// Market-maker protection tag. `0` is the default / untagged group.
+pub type MMPTag = u16;
+
+/// Default MMP tag used when an order does not specify one.
+pub const DEFAULT_MMP_TAG: MMPTag = 0;
+
 /// Rank assigned to a liquidity provider, used to determine fee values.
 pub type LiquidityProviderRank = u64;
 
